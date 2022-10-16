@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Health Tracker API
+  description: This API provides endpoints for handling CRUD operations on the Health Tracker data.
+  contact:
+    name: Siobhan Drohan 
+    email: siobhan.drohan@setu.ie
+paths:
+  /api/users:
+    get:
+      responses:
+        200:
+          description: This is a list of the users in the app
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      description: Add a user to the app
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: The user has been created
+          
+  /api/users/{user-id}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        200:
+          description: This is a specific user in the app
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        200:
+          description: User deleted from app
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: User updated in the app
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+                
+  /api/users/email/{email}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/EmailPath'
+      responses:
+        200:
+          description: This is a specific user in the app
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+                
+  /api/activities:
+    get:
+      responses:
+        200:
+          description: All the activities
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Activity'
+    post:
+      description: Add an activity to the app
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activity'
+      responses:
+        200:
+          description: The activity has been created
+  
+  /api/activities/{activity-id}:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/ActivityIdPath'
+      responses:
+        200:
+          description: This is a specific activity in the app
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+    delete:
+      parameters:
+        - $ref: '#/components/parameters/ActivityIdPath'
+      responses:
+        200:
+          description: Deleted activity
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+    patch:
+      parameters:
+        - $ref: '#/components/parameters/ActivityIdPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activity'
+      responses:
+        200:
+          description: Deleted activity
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+  
+  /api/users/{user-id}/activities:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        200:
+          description: Get activities from a user
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/Activity'
+    delete:
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        200:
+          description: Deleted activites from user
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+  
+components:
+  parameters:
+      UserIdPath:
+        in: path
+        name: user-id
+        description: User id path parameter
+        required: true
+        schema:
+          type: integer
+          example: 3232
+      EmailPath:
+        in: path
+        name: email
+        description: User email
+        required: true
+        schema:
+          type: string
+          example: jackdelahunt@wit.ie
+      ActivityIdPath:
+        in: path
+        name: activity-id
+        description: Activity id path parameter
+        required: true
+        schema:
+          type: integer
+          example: 43
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        name:
+          type: string
+          example: Jack Delahunt
+        email:
+          type: string
+          example: jackdelahunt@wit.ie
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42

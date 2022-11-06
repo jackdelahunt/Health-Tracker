@@ -10,6 +10,7 @@ import io.javalin.plugin.openapi.annotations.*
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import ie.setu.domain.Activity
+import ie.setu.utils.jsonToObject
 
 
 object HealthTrackerController {
@@ -26,7 +27,14 @@ object HealthTrackerController {
         responses = [OpenApiResponse("200", [OpenApiContent(Array<User>::class)])]
     )
     fun getAllUsers(ctx: Context) {
-        ctx.json(userDAO.getAll())
+        val users = userDAO.getAll()
+        if (users.size != 0) {
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
+        }
+        ctx.json(users)
     }
 
     @OpenApi(
@@ -42,6 +50,10 @@ object HealthTrackerController {
         val user = userDAO.findById(ctx.pathParam("user-id").toInt())
         if (user != null) {
             ctx.json(user)
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
         }
     }
 
@@ -55,10 +67,13 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("200")]
     )
     fun addUser(ctx: Context) {
-        val mapper = jacksonObjectMapper()
-        val user = mapper.readValue<User>(ctx.body())
-        userDAO.save(user)
-        ctx.json(user)
+        val user : User = jsonToObject(ctx.body())
+        val userId = userDAO.save(user)
+        if (userId != null) {
+            user.id = userId
+            ctx.json(user)
+            ctx.status(201)
+        }
     }
 
     @OpenApi(
@@ -74,6 +89,10 @@ object HealthTrackerController {
         val user = userDAO.findByEmail(ctx.pathParam("email"))
         if (user != null) {
             ctx.json(user)
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
         }
     }
 
@@ -87,7 +106,10 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("204")]
     )
     fun deleteUser(ctx: Context){
-        userDAO.delete(ctx.pathParam("user-id").toInt())
+        if (userDAO.delete(ctx.pathParam("user-id").toInt()) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
     }
 
     @OpenApi(
@@ -100,12 +122,11 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("204")]
     )
     fun updateUser(ctx: Context){
-        println("PATCH user by id")
-
-        val id = ctx.pathParam("user-id").toInt()
-        val mapper = jacksonObjectMapper()
-        val user = mapper.readValue<User>(ctx.body())
-        userDAO.update(id, user)
+        val foundUser : User = jsonToObject(ctx.body())
+        if ((userDAO.update(id = ctx.pathParam("user-id").toInt(), user=foundUser)) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
     }
 
     @OpenApi(
@@ -154,10 +175,7 @@ object HealthTrackerController {
     )
     fun addActivity(ctx: Context) {
         //mapper handles the serialisation of Joda date into a String.
-        val mapper = jacksonObjectMapper()
-            .registerModule(JodaModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        val activity = mapper.readValue<Activity>(ctx.body())
+        val activity : Activity = jsonToObject(ctx.body())
         activityDAO.save(activity)
         ctx.json(activity)
     }
@@ -185,10 +203,7 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("200")]
     )
     fun updateActivity(ctx: Context){
-        val mapper = jacksonObjectMapper()
-            .registerModule(JodaModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        val activity = mapper.readValue<Activity>(ctx.body())
+        val activity : Activity = jsonToObject(ctx.body())
         activityDAO.updateByActivityId(
             activityId = ctx.pathParam("activity-id").toInt(),
             activityDTO=activity)

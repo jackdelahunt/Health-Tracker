@@ -1,210 +1,390 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
-  version: 1.0.0
-  title: Health Tracker API
-  description: This API provides endpoints for handling CRUD operations on the Health Tracker data.
-  contact:
-    name: Siobhan Drohan 
-    email: siobhan.drohan@setu.ie
+  title: Health Tracker App
+  description: Health Tracker API
+  version: '1.0'
 paths:
-  /api/users:
+  "/api/users":
     get:
+      tags:
+        - User
+      summary: Get all users
+      operationId: getAllUsers
       responses:
-        200:
-          description: This is a list of the users in the app
-          content: 
+        '200':
+          description: OK
+          content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  "$ref": "#/components/schemas/User"
+              exampleSetFlag: false
     post:
-      description: Add a user to the app
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
+      tags:
+        - User
+      summary: Add User
+      operationId: addUser
+      parameters:
+        - name: user-id
+          in: path
+          description: The user ID
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
-        200:
-          description: The user has been created
-          
-  /api/users/{user-id}:
+        '200':
+          description: OK
+  "/api/users/{user-id}":
     get:
+      tags:
+        - User
+      summary: Get user by ID
+      operationId: getUserById
       parameters:
-        - $ref: '#/components/parameters/UserIdPath'
+        - name: user-id
+          in: path
+          description: The user ID
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
-        200:
-          description: This is a specific user in the app
-          content: 
+        '200':
+          description: OK
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                "$ref": "#/components/schemas/User"
+              exampleSetFlag: false
     delete:
+      tags:
+        - User
+      summary: Delete user by ID
+      operationId: deleteUserById
       parameters:
-        - $ref: '#/components/parameters/UserIdPath'
+        - name: user-id
+          in: path
+          description: The user ID
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
-        200:
-          description: User deleted from app
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
+        '204':
+          description: No Content
     patch:
+      tags:
+        - User
+      summary: Update user by ID
+      operationId: updateUserById
       parameters:
-        - $ref: '#/components/parameters/UserIdPath'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
+        - name: user-id
+          in: path
+          description: The user ID
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
-        200:
-          description: User updated in the app
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-                
-  /api/users/email/{email}:
+        '204':
+          description: No Content
+  "/api/users/{user-id}/activities":
     get:
+      tags:
+        - User
+      summary: Get activities by user id
+      operationId: getActivitiesByUserId
       parameters:
-        - $ref: '#/components/parameters/EmailPath'
+        - name: user-id
+          in: path
+          description: The user id
+          required: true
+          schema:
+            type: integer
+            format: int32
       responses:
-        200:
-          description: This is a specific user in the app
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-                
-  /api/activities:
-    get:
-      responses:
-        200:
-          description: All the activities
-          content: 
-            application/json:
-              schema:
-                type: array
-                items: 
-                  $ref: '#/components/schemas/Activity'
-    post:
-      description: Add an activity to the app
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Activity'
-      responses:
-        200:
-          description: The activity has been created
-  
-  /api/activities/{activity-id}:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/ActivityIdPath'
-      responses:
-        200:
-          description: This is a specific activity in the app
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Activity'
-    delete:
-      parameters:
-        - $ref: '#/components/parameters/ActivityIdPath'
-      responses:
-        200:
-          description: Deleted activity
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Activity'
-    patch:
-      parameters:
-        - $ref: '#/components/parameters/ActivityIdPath'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Activity'
-      responses:
-        200:
-          description: Deleted activity
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Activity'
-  
-  /api/users/{user-id}/activities:
-    get:
-      parameters:
-        - $ref: '#/components/parameters/UserIdPath'
-      responses:
-        200:
-          description: Get activities from a user
-          content: 
-            application/json:
-              schema:
-                type: array
-                items: 
-                  $ref: '#/components/schemas/Activity'
-    delete:
-      parameters:
-        - $ref: '#/components/parameters/UserIdPath'
-      responses:
-        200:
-          description: Deleted activites from user
-          content: 
+        '200':
+          description: OK
+          content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Activity'
-  
+                  "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+    delete:
+      tags:
+        - User
+      summary: Delete activities by user id
+      operationId: deleteActivitiesByUserId
+      parameters:
+        - name: user-id
+          in: path
+          description: The user id
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+  "/api/users/email/{email}":
+    get:
+      tags:
+        - User
+      summary: Get user by Email
+      operationId: getUserByEmail
+      parameters:
+        - name: email
+          in: path
+          description: The user email
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+              exampleSetFlag: false
+  "/api/activities":
+    get:
+      tags:
+        - Activity
+      summary: Get all activities
+      operationId: getAllActivities
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+    post:
+      tags:
+        - Activity
+      summary: Add Activity
+      operationId: addActivity
+      responses:
+        '200':
+          description: OK
+  "/api/activities/{activity-id}":
+    get:
+      tags:
+        - Activity
+      summary: Get activity by activity id
+      operationId: getActivityByActivityId
+      parameters:
+        - name: activity-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+    delete:
+      tags:
+        - Activity
+      summary: Delete activity by activityID
+      operationId: deleteActivityByActivityId
+      parameters:
+        - name: activity-id
+          in: path
+          description: The activity ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags:
+        - Activity
+      summary: Update activity by ID
+      operationId: updateActivityById
+      parameters:
+        - name: activity-id
+          in: path
+          description: The activity ID
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+  "/api/health-reports":
+    get:
+      tags:
+        - HealthReport
+      summary: Get all health reports
+      operationId: getAllHealthReports
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/HealthReport"
+              exampleSetFlag: false
+    post:
+      tags:
+        - HealthReport
+      summary: Add Health Report
+      operationId: addHealthReport
+      responses:
+        '200':
+          description: OK
+  "/api/health-reports/{health-report-id}":
+    get:
+      tags:
+        - HealthReport
+      summary: Get health report by health report id
+      operationId: getHealthReportByHealthReportId
+      parameters:
+        - name: health-report-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+    delete:
+      tags:
+        - HealthReport
+      summary: Get health report by health report id
+      operationId: getHealthReportByHealthReportId
+      parameters:
+        - name: health-report-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
+    patch:
+      tags:
+        - HealthReport
+      summary: Get health report by health report id
+      operationId: getHealthReportByHealthReportId
+      parameters:
+        - name: health-report-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Activity"
+              exampleSetFlag: false
 components:
-  parameters:
-      UserIdPath:
-        in: path
-        name: user-id
-        description: User id path parameter
-        required: true
-        schema:
-          type: integer
-          example: 3232
-      EmailPath:
-        in: path
-        name: email
-        description: User email
-        required: true
-        schema:
-          type: string
-          example: jackdelahunt@wit.ie
-      ActivityIdPath:
-        in: path
-        name: activity-id
-        description: Activity id path parameter
-        required: true
-        schema:
-          type: integer
-          example: 43
   schemas:
     User:
+      required:
+        - email
+        - id
+        - name
       type: object
       properties:
         id:
           type: integer
-          example: 42
+          format: int32
         name:
           type: string
-          example: Jack Delahunt
         email:
           type: string
-          example: jackdelahunt@wit.ie
     Activity:
+      required:
+        - calories
+        - description
+        - duration
+        - id
+        - started
+        - userId
       type: object
       properties:
         id:
           type: integer
-          example: 42
+          format: int32
+        description:
+          type: string
+        duration:
+          type: number
+          format: double
+        calories:
+          type: integer
+          format: int32
+        started:
+          type: string
+          format: date-time
+        userId:
+          type: integer
+          format: int32
+    HealthReport:
+      required:
+        - bmi
+        - height
+        - id
+        - userId
+        - weight
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        weight:
+          type: integer
+          format: int32
+        height:
+          type: number
+          format: double
+        BMI:
+          type: integer
+          format: int32
+          writeOnly: true
+        userId:
+          type: integer
+          format: int32
+        bmi:
+          type: integer
+          format: int32

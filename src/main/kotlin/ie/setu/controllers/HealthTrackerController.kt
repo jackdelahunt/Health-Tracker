@@ -130,21 +130,66 @@ object HealthTrackerController {
     }
 
     @OpenApi(
-        summary = "Get all activities",
-        operationId = "getAllActivities",
-        tags = ["Activity"],
-        path = "/api/activities",
+        summary = "Get activities by user id",
+        operationId = "getActivitiesByUserId",
+        tags = ["User"],
+        path = "/api/users/{user-id}/activities",
         method = HttpMethod.GET,
         pathParams = [OpenApiParam("user-id", Int::class, "The user id")],
         responses = [OpenApiResponse("200", [OpenApiContent(Array<Activity>::class)])]
 
     )
+    fun getActivitiesByUserId(ctx: Context) {
+        if (userDAO.findById(ctx.pathParam("user-id").toInt()) != null) {
+            val activities = activityDAO.findByUserId(ctx.pathParam("user-id").toInt())
+            if (activities.isNotEmpty()) {
+                ctx.json(activities)
+                ctx.status(200)
+            }
+            else{
+                ctx.status(404)
+            }
+        }
+        else{
+            ctx.status(404)
+        }
+    }
+
+    @OpenApi(
+        summary = "Delete activities by user id",
+        operationId = "deleteActivitiesByUserId",
+        tags = ["User"],
+        path = "/api/users/{user-id}/activities",
+        method = HttpMethod.DELETE,
+        pathParams = [OpenApiParam("user-id", Int::class, "The user id")],
+        responses = [OpenApiResponse("200", [OpenApiContent(Array<Activity>::class)])]
+
+    )
+    fun deleteActivityByUserId(ctx: Context){
+        if (activityDAO.deleteByUserId(ctx.pathParam("user-id").toInt()) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
+    }
+
+    @OpenApi(
+        summary = "Get all activities",
+        operationId = "getAllActivities",
+        tags = ["Activity"],
+        path = "/api/activities",
+        method = HttpMethod.GET,
+        responses = [OpenApiResponse("200", [OpenApiContent(Array<Activity>::class)])]
+
+    )
     fun getAllActivities(ctx: Context) {
-        //mapper handles the deserialization of Joda date into a String.
-        val mapper = jacksonObjectMapper()
-            .registerModule(JodaModule())
-            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        ctx.json(mapper.writeValueAsString( activityDAO.getAll() ))
+        val activities = activityDAO.getAll()
+        if (activities.size != 0) {
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
+        }
+        ctx.json(activities)
     }
 
     @OpenApi(
@@ -174,10 +219,17 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("200")]
     )
     fun addActivity(ctx: Context) {
-        //mapper handles the serialisation of Joda date into a String.
         val activity : Activity = jsonToObject(ctx.body())
-        activityDAO.save(activity)
-        ctx.json(activity)
+        val userId = userDAO.findById(activity.userId)
+        if (userId != null) {
+            val activityId = activityDAO.save(activity)
+            activity.id = activityId
+            ctx.json(activity)
+            ctx.status(201)
+        }
+        else{
+            ctx.status(404)
+        }
     }
 
     @OpenApi(
@@ -190,7 +242,10 @@ object HealthTrackerController {
         responses  = [OpenApiResponse("200")]
     )
     fun deleteActivityByActivityId(ctx: Context){
-        activityDAO.deleteByActivityId(ctx.pathParam("activity-id").toInt())
+        if (activityDAO.deleteByActivityId(ctx.pathParam("activity-id").toInt()) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
     }
 
     @OpenApi(
@@ -204,8 +259,11 @@ object HealthTrackerController {
     )
     fun updateActivity(ctx: Context){
         val activity : Activity = jsonToObject(ctx.body())
-        activityDAO.updateByActivityId(
-            activityId = ctx.pathParam("activity-id").toInt(),
-            activityDTO=activity)
+        if (activityDAO.updateByActivityId(
+                activityId = ctx.pathParam("activity-id").toInt(),
+                activityToUpdate =activity) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
     }
 }

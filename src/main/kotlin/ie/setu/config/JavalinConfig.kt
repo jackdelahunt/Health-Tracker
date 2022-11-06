@@ -59,6 +59,16 @@ class JavalinConfig {
                     patch(HealthTrackerController::updateActivity)
                 }
             }
+
+            path("/api/health-reports") {
+                get(HealthTrackerController::getAllHealthReports)
+                post(HealthTrackerController::addHealthReport)
+                path("{health-report-id}") {
+                    get(HealthTrackerController::getHealthReportsByHealthReportsId)
+                    delete(HealthTrackerController::deleteHealthReportByHealthReportId)
+                    patch(HealthTrackerController::updateHealReport)
+                }
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 package ie.setu.controllers
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import ie.setu.domain.User
 import ie.setu.domain.repository.ActivityDAO
 import ie.setu.domain.repository.UserDAO
@@ -10,6 +9,8 @@ import io.javalin.plugin.openapi.annotations.*
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import ie.setu.domain.Activity
+import ie.setu.domain.HealthReport
+import ie.setu.domain.repository.HealthReportDAO
 import ie.setu.utils.jsonToObject
 
 
@@ -17,6 +18,7 @@ object HealthTrackerController {
 
     private val userDAO = UserDAO()
     private val activityDAO = ActivityDAO()
+    private val healthReportDAO = HealthReportDAO()
 
     @OpenApi(
         summary = "Get all users",
@@ -172,6 +174,9 @@ object HealthTrackerController {
             ctx.status(404)
     }
 
+    /*
+            ACTIVITIES
+     */
     @OpenApi(
         summary = "Get all activities",
         operationId = "getAllActivities",
@@ -262,6 +267,104 @@ object HealthTrackerController {
         if (activityDAO.updateByActivityId(
                 activityId = ctx.pathParam("activity-id").toInt(),
                 activityToUpdate =activity) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
+    }
+
+    /*
+           HEALTH REPORT
+    */
+    @OpenApi(
+        summary = "Get all health reports",
+        operationId = "getAllHealthReports",
+        tags = ["HealthReport"],
+        path = "/api/health-reports",
+        method = HttpMethod.GET,
+        responses = [OpenApiResponse("200", [OpenApiContent(Array<HealthReport>::class)])]
+
+    )
+    fun getAllHealthReports(ctx: Context) {
+        val healthReports = healthReportDAO.getAll()
+        if (healthReports.size != 0) {
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
+        }
+        ctx.json(healthReports)
+    }
+
+    @OpenApi(
+        summary = "Get health report by health report id",
+        operationId = "getHealthReportByHealthReportId",
+        tags = ["HealthReport"],
+        path = "/api/health-reports/{health-report-id}",
+        method = HttpMethod.GET,
+        responses  = [OpenApiResponse("200", [OpenApiContent(Activity::class)])]
+    )
+    fun getHealthReportsByHealthReportsId(ctx: Context) {
+        val healthReport = healthReportDAO.findByHealthReportId((ctx.pathParam("health-report-id").toInt()))
+        if (healthReport != null){
+            val mapper = jacksonObjectMapper()
+                .registerModule(JodaModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            ctx.json(mapper.writeValueAsString(healthReport))
+        }
+    }
+
+    @OpenApi(
+        summary = "Add Health Report",
+        operationId = "addHealthReport",
+        tags = ["HealthReport"],
+        path = "/api/health-reports",
+        method = HttpMethod.POST,
+        responses  = [OpenApiResponse("200")]
+    )
+    fun addHealthReport(ctx: Context) {
+        val healthReport : HealthReport = jsonToObject(ctx.body())
+        val userId = userDAO.findById(healthReport.userId)
+        if (userId != null) {
+            val healthReportId = healthReportDAO.save(healthReport)
+            healthReport.id = healthReportId
+            ctx.json(healthReport)
+            ctx.status(201)
+        }
+        else{
+            ctx.status(404)
+        }
+    }
+
+    @OpenApi(
+        summary = "Delete health report by health reportId",
+        operationId = "deleteHealthReportByHealthReportId",
+        tags = ["HealthReport"],
+        path = "/api/health-report/{health-report-id}",
+        method = HttpMethod.DELETE,
+        pathParams = [OpenApiParam("health-report-id", Int::class, "The health report ID")],
+        responses  = [OpenApiResponse("200")]
+    )
+    fun deleteHealthReportByHealthReportId(ctx: Context){
+        if (healthReportDAO.deleteByHealthReportById(ctx.pathParam("health-report-id").toInt()) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
+    }
+
+    @OpenApi(
+        summary = "Update health report by ID",
+        operationId = "updateHealthReportById",
+        tags = ["HealthReport"],
+        path = "/api/health-report/{health-report-id}",
+        method = HttpMethod.PATCH,
+        pathParams = [OpenApiParam("health-report-id", Int::class, "The health report ID")],
+        responses  = [OpenApiResponse("200")]
+    )
+    fun updateHealReport(ctx: Context){
+        val healthReport : HealthReport = jsonToObject(ctx.body())
+        if (healthReportDAO.updateByHealthReportById(
+                healthReportId = ctx.pathParam("health-report-id").toInt(),
+                healthReportToUpdate =healthReport) != 0)
             ctx.status(204)
         else
             ctx.status(404)

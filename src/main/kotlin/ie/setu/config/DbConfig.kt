@@ -13,11 +13,21 @@ class DbConfig{
 
         logger.info{"Starting DB Connection..."}
 
+        val PGUSER = "phkrnruk"
+        val PGPASSWORD = "Hr9p4VRa0yaWM4SbSdxJwPNqEsiyRHz4"
+        val PGHOST = "mel.db.elephantsql.com"
+        val PGPORT = "5432"
+        val PGDATABASE = "phkrnruk"
+
+        //url format should be jdbc:postgresql://host:port/database
+        val url = "jdbc:postgresql://$PGHOST:$PGPORT/$PGDATABASE"
+
         val dbConfig = Database.connect(
-            "jdbc:postgresql://ec2-18-215-41-121.compute-1.amazonaws.com:5432/d9bv0katptoa6k?sslmode=require",
+            url,
             driver = "org.postgresql.Driver",
-            user = "cnbpybtwwfwpol",
-            password = "0247af8d2320f76667a5a4947e96bc608932c56996325d57cbf4558ff6e5e87f")
+            user = PGUSER,
+            password = PGPASSWORD
+        )
 
         logger.info{"DbConfig name = " + dbConfig.name}
         logger.info{"DbConfig url = " + dbConfig.url}

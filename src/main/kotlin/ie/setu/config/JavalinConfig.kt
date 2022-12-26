@@ -85,7 +85,7 @@ class JavalinConfig {
         val herokuPort = System.getenv("PORT")
         return if (herokuPort != null) {
             Integer.parseInt(herokuPort)
-        } else 7000
+        } else 8080
     }
 
     fun getConfiguredOpenApiPlugin() = OpenApiPlugin(

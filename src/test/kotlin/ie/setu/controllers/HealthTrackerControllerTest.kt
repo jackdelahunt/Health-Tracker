@@ -1,23 +1,20 @@
 package ie.setu.controllers
 
 import ie.setu.config.DbConfig
+import ie.setu.domain.Activity
 import ie.setu.domain.User
 import ie.setu.helpers.ServerContainer
-import kong.unirest.Unirest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import ie.setu.helpers.nonExistingEmail
+import ie.setu.helpers.*
+import ie.setu.utils.jsonNodeToObject
 import ie.setu.utils.jsonToObject
 import kong.unirest.HttpResponse
 import kong.unirest.JsonNode
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Nested
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import ie.setu.domain.Activity
-import ie.setu.helpers.*
-import ie.setu.utils.jsonNodeToObject
+import kong.unirest.Unirest
 import org.joda.time.DateTime
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class HealthTrackerControllerTest {
@@ -25,90 +22,6 @@ class HealthTrackerControllerTest {
     private val db = DbConfig().getDbConnection()
     private val app = ServerContainer.instance
     private val origin = "http://localhost:" + app.port()
-
-    //helper function to add a test user to the database
-    private fun addUser (name: String, email: String): HttpResponse<JsonNode> {
-        return Unirest.post(origin + "/api/users")
-            .body("{\"name\":\"$name\", \"email\":\"$email\"}")
-            .asJson()
-    }
-
-    //helper function to delete a test user from the database
-    private fun deleteUser (id: Int): HttpResponse<String> {
-        return Unirest.delete(origin + "/api/users/$id").asString()
-    }
-
-    //helper function to retrieve a test user from the database by email
-    private fun retrieveUserByEmail(email : String) : HttpResponse<String> {
-        return Unirest.get(origin + "/api/users/email/${email}").asString()
-    }
-
-    //helper function to retrieve a test user from the database by id
-    private fun retrieveUserById(id: Int) : HttpResponse<String> {
-        return Unirest.get(origin + "/api/users/${id}").asString()
-    }
-
-    //helper function to add a test user to the database
-    private fun updateUser (id: Int, name: String, email: String): HttpResponse<JsonNode> {
-        return Unirest.patch(origin + "/api/users/$id")
-            .body("{\"name\":\"$name\", \"email\":\"$email\"}")
-            .asJson()
-    }
-
-    private fun retrieveAllActivities(): HttpResponse<JsonNode> {
-        return Unirest.get(origin + "/api/activities").asJson()
-    }
-
-    //helper function to retrieve activities by user id
-    private fun retrieveActivitiesByUserId(id: Int): HttpResponse<JsonNode> {
-        return Unirest.get(origin + "/api/users/${id}/activities").asJson()
-    }
-
-    //helper function to retrieve activity by activity id
-    private fun retrieveActivityByActivityId(id: Int): HttpResponse<JsonNode> {
-        return Unirest.get(origin + "/api/activities/${id}").asJson()
-    }
-
-    //helper function to delete an activity by activity id
-    private fun deleteActivityByActivityId(id: Int): HttpResponse<String> {
-        return Unirest.delete(origin + "/api/activities/$id").asString()
-    }
-
-    //helper function to delete an activity by activity id
-    private fun deleteActivitiesByUserId(id: Int): HttpResponse<String> {
-        return Unirest.delete(origin + "/api/users/$id/activities").asString()
-    }
-
-    //helper function to add a test user to the database
-    private fun updateActivity(id: Int, description: String, duration: Double, calories: Int,
-                               started: DateTime, userId: Int): HttpResponse<JsonNode> {
-        return Unirest.patch(origin + "/api/activities/$id")
-            .body("""
-                {
-                  "description":"$description",
-                  "duration":$duration,
-                  "calories":$calories,
-                  "started":"$started",
-                  "userId":$userId
-                }
-            """.trimIndent()).asJson()
-    }
-
-    //helper function to add an activity
-    private fun addActivity(description: String, duration: Double, calories: Int,
-                            started: DateTime, userId: Int): HttpResponse<JsonNode> {
-        return Unirest.post(origin + "/api/activities")
-            .body("""
-                {
-                   "description":"$description",
-                   "duration":$duration,
-                   "calories":$calories,
-                   "started":"$started",
-                   "userId":$userId
-                }
-            """.trimIndent())
-            .asJson()
-    }
 
     @Nested
     inner class ReadUsers {
@@ -126,8 +39,10 @@ class HealthTrackerControllerTest {
 
         @Test
         fun `get user by id when user does not exist returns 404 response`() {
+
             //Arrange & Act - attempt to retrieve the non-existent user from the database
             val retrieveResponse = retrieveUserById(Integer.MIN_VALUE)
+
             // Assert -  verify return code
             assertEquals(404, retrieveResponse.status)
         }
@@ -136,6 +51,7 @@ class HealthTrackerControllerTest {
         fun `get user by email when user does not exist returns 404 response`() {
             // Arrange & Act - attempt to retrieve the non-existent user from the database
             val retrieveResponse = retrieveUserByEmail(nonExistingEmail)
+
             // Assert -  verify return code
             assertEquals(404, retrieveResponse.status)
         }
@@ -249,6 +165,7 @@ class HealthTrackerControllerTest {
         }
     }
 
+
     @Nested
     inner class CreateActivities {
 
@@ -344,6 +261,16 @@ class HealthTrackerControllerTest {
             val response = retrieveActivitiesByUserId(userId)
             assertEquals(404, response.status)
         }
+
+        @Test
+        fun `get activity by activity id when no activity exists returns 404 response`() {
+            //Arrange
+            val activityId = -1
+            //Assert and Act - attempt to retrieve the activity by activity id
+            val response = retrieveActivityByActivityId(activityId)
+            assertEquals(404, response.status)
+        }
+
 
         @Test
         fun `get activity by activity id when activity exists returns 200 response`() {
@@ -448,5 +375,124 @@ class HealthTrackerControllerTest {
             //After - delete the user
             deleteUser(addedUser.id)
         }
+
+        @Test
+        fun `deleting all activities by userid when it exists, returns a 204 response`() {
+
+            //Arrange - add a user and 3 associated activities that we plan to do a cascade delete
+            val addedUser : User = jsonToObject(addUser(validName, validEmail).body.toString())
+            val addActivityResponse1 = addActivity(
+                activities[0].description, activities[0].duration,
+                activities[0].calories, activities[0].started, addedUser.id)
+            assertEquals(201, addActivityResponse1.status)
+            val addActivityResponse2 = addActivity(
+                activities[1].description, activities[1].duration,
+                activities[1].calories, activities[1].started, addedUser.id)
+            assertEquals(201, addActivityResponse2.status)
+            val addActivityResponse3 = addActivity(
+                activities[2].description, activities[2].duration,
+                activities[2].calories, activities[2].started, addedUser.id)
+            assertEquals(201, addActivityResponse3.status)
+
+            //Act & Assert - delete the added user and assert a 204 is returned
+            assertEquals(204, deleteUser(addedUser.id).status)
+
+            //Act & Assert - attempt to retrieve the deleted activities
+            val addedActivity1 = jsonNodeToObject<Activity>(addActivityResponse1)
+            val addedActivity2 = jsonNodeToObject<Activity>(addActivityResponse2)
+            val addedActivity3 = jsonNodeToObject<Activity>(addActivityResponse3)
+            assertEquals(404, retrieveActivityByActivityId(addedActivity1.id).status)
+            assertEquals(404, retrieveActivityByActivityId(addedActivity2.id).status)
+            assertEquals(404, retrieveActivityByActivityId(addedActivity3.id).status)
+        }
+    }
+
+    //--------------------------------------------------------------------------------------
+    // HELPER METHODS - could move them into a test utility class when submitting assignment
+    //--------------------------------------------------------------------------------------
+
+    //helper function to add a test user to the database
+    private fun addUser (name: String, email: String): HttpResponse<JsonNode> {
+        return Unirest.post(origin + "/api/users")
+            .body("{\"name\":\"$name\", \"email\":\"$email\"}")
+            .asJson()
+    }
+
+    //helper function to delete a test user from the database
+    private fun deleteUser (id: Int): HttpResponse<String> {
+        return Unirest.delete(origin + "/api/users/$id").asString()
+    }
+
+    //helper function to retrieve a test user from the database by email
+    private fun retrieveUserByEmail(email : String) : HttpResponse<String> {
+        return Unirest.get(origin + "/api/users/email/${email}").asString()
+    }
+
+    //helper function to retrieve a test user from the database by id
+    private fun retrieveUserById(id: Int) : HttpResponse<String> {
+        return Unirest.get(origin + "/api/users/${id}").asString()
+    }
+
+    //helper function to add a test user to the database
+    private fun updateUser (id: Int, name: String, email: String): HttpResponse<JsonNode> {
+        return Unirest.patch(origin + "/api/users/$id")
+            .body("{\"name\":\"$name\", \"email\":\"$email\"}")
+            .asJson()
+    }
+
+    //helper function to retrieve all activities
+    private fun retrieveAllActivities(): HttpResponse<JsonNode> {
+        return Unirest.get(origin + "/api/activities").asJson()
+    }
+
+    //helper function to retrieve activities by user id
+    private fun retrieveActivitiesByUserId(id: Int): HttpResponse<JsonNode> {
+        return Unirest.get(origin + "/api/users/${id}/activities").asJson()
+    }
+
+    //helper function to retrieve activity by activity id
+    private fun retrieveActivityByActivityId(id: Int): HttpResponse<JsonNode> {
+        return Unirest.get(origin + "/api/activities/${id}").asJson()
+    }
+
+    //helper function to delete an activity by activity id
+    private fun deleteActivityByActivityId(id: Int): HttpResponse<String> {
+        return Unirest.delete(origin + "/api/activities/$id").asString()
+    }
+
+    //helper function to delete an activity by activity id
+    private fun deleteActivitiesByUserId(id: Int): HttpResponse<String> {
+        return Unirest.delete(origin + "/api/users/$id/activities").asString()
+    }
+
+    //helper function to add a test user to the database
+    private fun updateActivity(id: Int, description: String, duration: Double, calories: Int,
+                               started: DateTime, userId: Int): HttpResponse<JsonNode> {
+        return Unirest.patch(origin + "/api/activities/$id")
+            .body("""
+                {
+                  "description":"$description",
+                  "duration":$duration,
+                  "calories":$calories,
+                  "started":"$started",
+                  "userId":$userId
+                }
+            """.trimIndent()).asJson()
+    }
+
+    //helper function to add an activity
+    private fun addActivity(description: String, duration: Double, calories: Int,
+                            started: DateTime, userId: Int): HttpResponse<JsonNode> {
+        return Unirest.post(origin + "/api/activities")
+            .body("""
+                {
+                   "description":"$description",
+                   "duration":$duration,
+                   "calories":$calories,
+                   "started":"$started",
+                   "userId":$userId
+                }
+            """.trimIndent())
+            .asJson()
     }
 }

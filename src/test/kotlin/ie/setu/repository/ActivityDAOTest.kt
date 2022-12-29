@@ -13,7 +13,7 @@ import ie.setu.domain.repository.ActivityDAO
 import ie.setu.helpers.activities
 import ie.setu.helpers.populateActivityTable
 import ie.setu.helpers.populateUserTable
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 
 //retrieving some test data from Fixtures
 private val activity1 = activities.get(0)

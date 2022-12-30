@@ -206,13 +206,7 @@ class HealthTrackerControllerTest {
         @Test
         fun `get all activities from the database returns 200 or 404 response`() {
             val response = retrieveAllActivities()
-            if (response.status == 200){
-                val retrievedActivities = jsonNodeToObject<Array<Activity>>(response)
-                assertNotEquals(0, retrievedActivities.size)
-            }
-            else{
-                assertEquals(404, response.status)
-            }
+            assertEquals(200, response.status)
         }
 
         @Test

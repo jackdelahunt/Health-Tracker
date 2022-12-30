@@ -188,12 +188,7 @@ object HealthTrackerController {
     )
     fun getAllActivities(ctx: Context) {
         val activities = activityDAO.getAll()
-        if (activities.size != 0) {
-            ctx.status(200)
-        }
-        else{
-            ctx.status(404)
-        }
+        ctx.status(200)
         ctx.json(activities)
     }
 

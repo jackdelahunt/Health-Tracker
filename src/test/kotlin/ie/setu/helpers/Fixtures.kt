@@ -2,10 +2,13 @@ package ie.setu.helpers
 
 
 import ie.setu.domain.Activity
+import ie.setu.domain.HealthReport
 import ie.setu.domain.User
 import ie.setu.domain.db.Activities
+import ie.setu.domain.db.HealthReports
 import ie.setu.domain.db.Users
 import ie.setu.domain.repository.ActivityDAO
+import ie.setu.domain.repository.HealthReportDAO
 import ie.setu.domain.repository.UserDAO
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.joda.time.DateTime
@@ -35,6 +38,13 @@ val activities = arrayListOf<Activity>(
     Activity(id = 3, description = "Walking", duration = 12.0, calories = 120, started = DateTime.now(), userId = 2)
 )
 
+val healthReports = arrayListOf<HealthReport>(
+    HealthReport(id = 1, 67, height = 1.87, BMI = 12, 1),
+    HealthReport(id = 2, 77, height = 1.90, BMI = 11, 2),
+    HealthReport(id = 3, 80, height = 1.67, BMI = 16, 3),
+    HealthReport(id = 4, 88, height = 1.75, BMI = 14, 4),
+)
+
 fun populateUserTable(): UserDAO {
     SchemaUtils.create(Users)
     val userDAO = UserDAO()
@@ -51,4 +61,13 @@ fun populateActivityTable(): ActivityDAO {
     activityDAO.save(activities[1])
     activityDAO.save(activities[2])
     return activityDAO
+}
+
+fun populateHealthReportTable(): HealthReportDAO {
+    SchemaUtils.create(HealthReports)
+    val healthReportDAO = HealthReportDAO()
+    healthReportDAO.save(healthReports[0])
+    healthReportDAO.save(healthReports[1])
+    healthReportDAO.save(healthReports[2])
+    return healthReportDAO
 }

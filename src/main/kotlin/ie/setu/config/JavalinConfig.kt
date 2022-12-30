@@ -38,6 +38,10 @@ class JavalinConfig {
             get("/users/{user-id}", VueComponent("<user-profile></user-profile>"))
             get("/users/{user-id}/activities", VueComponent("<user-activity-overview></user-activity-overview>"))
 
+            get("/activities", VueComponent("<activity-overview></activity-overview>"))
+
+            get("/health-reports", VueComponent("<health-reports-overview></health-reports-overview>"))
+
             path("/api/users") {
 
                 get(HealthTrackerController::getAllUsers)

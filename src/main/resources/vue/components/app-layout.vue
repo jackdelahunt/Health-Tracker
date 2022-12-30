@@ -20,6 +20,11 @@
             <li class="nav-item">
               <a class="nav-link" href="/activities">Activities</a>
             </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="/health-reports">
+                Health Reports <span class="sr-only">(current)</span>
+              </a>
+            </li>
           </ul>
         </div>
       </nav>

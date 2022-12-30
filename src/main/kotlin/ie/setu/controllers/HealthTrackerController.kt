@@ -208,10 +208,11 @@ object HealthTrackerController {
     fun getActivitiesByActivityId(ctx: Context) {
         val activity = activityDAO.findByActivityId((ctx.pathParam("activity-id").toInt()))
         if (activity != null){
-            val mapper = jacksonObjectMapper()
-                .registerModule(JodaModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            ctx.json(mapper.writeValueAsString(activity))
+            ctx.json(activity)
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
         }
     }
 

@@ -73,6 +73,16 @@ class JavalinConfig {
                 }
             }
 
+            path("/api/meals") {
+                get(HealthTrackerController::getAllMeals)
+                post(HealthTrackerController::addMeal)
+                path("{meal-id}") {
+                    get(HealthTrackerController::getMealsByMealId)
+                    delete(HealthTrackerController::deleteMealByMealId)
+                    patch(HealthTrackerController::updateMeal)
+                }
+            }
+
             path("/api/health-reports") {
                 get(HealthTrackerController::getAllHealthReports)
                 post(HealthTrackerController::addHealthReport)

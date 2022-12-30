@@ -2,9 +2,11 @@ package ie.setu.utils
 
 import ie.setu.domain.Activity
 import ie.setu.domain.HealthReport
+import ie.setu.domain.Meal
 import ie.setu.domain.User
 import ie.setu.domain.db.Activities
 import ie.setu.domain.db.HealthReports
+import ie.setu.domain.db.Meals
 import ie.setu.domain.db.Users
 import org.jetbrains.exposed.sql.ResultRow
 
@@ -29,4 +31,13 @@ fun mapToHealthReport(it: ResultRow) = HealthReport(
     height = it[HealthReports.height],
     BMI = it[HealthReports.BMI],
     userId = it[HealthReports.userId],
+)
+
+fun mapToMeal(it: ResultRow) = Meal(
+    id = it[Meals.id],
+    description = it[Meals.description],
+    calories = it[Meals.calories],
+    fat = it[Meals.fat],
+    carbs = it[Meals.carbs],
+    userId = it[Meals.userId]
 )

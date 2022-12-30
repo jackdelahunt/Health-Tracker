@@ -3,12 +3,15 @@ package ie.setu.helpers
 
 import ie.setu.domain.Activity
 import ie.setu.domain.HealthReport
+import ie.setu.domain.Meal
 import ie.setu.domain.User
 import ie.setu.domain.db.Activities
 import ie.setu.domain.db.HealthReports
+import ie.setu.domain.db.Meals
 import ie.setu.domain.db.Users
 import ie.setu.domain.repository.ActivityDAO
 import ie.setu.domain.repository.HealthReportDAO
+import ie.setu.domain.repository.MealDAO
 import ie.setu.domain.repository.UserDAO
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.joda.time.DateTime
@@ -45,6 +48,11 @@ val healthReports = arrayListOf<HealthReport>(
     HealthReport(id = 4, 88, height = 1.75, BMI = 14, 4),
 )
 
+val meals = arrayListOf<Meal>(
+    Meal(id = 1, "High protein curry with chicken", calories = 600, fat = 12, carbs = 50, 1),
+    Meal(id = 2, "High protein fried chicken low fat sour sauce", calories = 400, fat = 20, carbs = 40, 2),
+)
+
 fun populateUserTable(): UserDAO {
     SchemaUtils.create(Users)
     val userDAO = UserDAO()
@@ -70,4 +78,12 @@ fun populateHealthReportTable(): HealthReportDAO {
     healthReportDAO.save(healthReports[1])
     healthReportDAO.save(healthReports[2])
     return healthReportDAO
+}
+
+fun populateMealTable(): MealDAO {
+    SchemaUtils.create(Meals)
+    val mealDAO = MealDAO()
+    mealDAO.save(meals[0])
+    mealDAO.save(meals[1])
+    return mealDAO
 }

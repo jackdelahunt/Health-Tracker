@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import ie.setu.domain.Activity
 import ie.setu.domain.HealthReport
+import ie.setu.domain.Meal
 import ie.setu.domain.repository.HealthReportDAO
+import ie.setu.domain.repository.MealDAO
 import ie.setu.utils.jsonToObject
 
 
@@ -19,6 +21,7 @@ object HealthTrackerController {
     private val userDAO = UserDAO()
     private val activityDAO = ActivityDAO()
     private val healthReportDAO = HealthReportDAO()
+    private val mealDAO = MealDAO()
 
     @OpenApi(
         summary = "Get all users",
@@ -361,6 +364,100 @@ object HealthTrackerController {
         if (healthReportDAO.updateByHealthReportById(
                 healthReportId = ctx.pathParam("health-report-id").toInt(),
                 healthReportToUpdate =healthReport) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
+    }
+
+    /*
+            MEALS
+     */
+    @OpenApi(
+        summary = "Get all meals",
+        operationId = "getAllMeals",
+        tags = ["Meal"],
+        path = "/api/meals",
+        method = HttpMethod.GET,
+        responses = [OpenApiResponse("200", [OpenApiContent(Array<Meal>::class)])]
+
+    )
+    fun getAllMeals(ctx: Context) {
+        val meals = mealDAO.getAll()
+        ctx.status(200)
+        ctx.json(meals)
+    }
+
+    @OpenApi(
+        summary = "Get meal by meal id",
+        operationId = "getMealByMealId",
+        tags = ["Meal"],
+        path = "/api/meals/{meal-id}",
+        method = HttpMethod.GET,
+        responses  = [OpenApiResponse("200", [OpenApiContent(Meal::class)])]
+    )
+    fun getMealsByMealId(ctx: Context) {
+        val meal = mealDAO.findByMealId((ctx.pathParam("meal-id").toInt()))
+        if (meal != null){
+            ctx.json(meal)
+            ctx.status(200)
+        }
+        else{
+            ctx.status(404)
+        }
+    }
+
+    @OpenApi(
+        summary = "Add Meal",
+        operationId = "addMeal",
+        tags = ["Meal"],
+        path = "/api/meals",
+        method = HttpMethod.POST,
+        responses  = [OpenApiResponse("200")]
+    )
+    fun addMeal(ctx: Context) {
+        val meal : Meal = jsonToObject(ctx.body())
+        val userId = userDAO.findById(meal.userId)
+        if (userId != null) {
+            val mealId = mealDAO.save(meal)
+            meal.id = mealId
+            ctx.json(meal)
+            ctx.status(201)
+        }
+        else{
+            ctx.status(404)
+        }
+    }
+
+    @OpenApi(
+        summary = "Delete meal by mealId",
+        operationId = "deleteMealByMealId",
+        tags = ["Meal"],
+        path = "/api/meals/{meal-id}",
+        method = HttpMethod.DELETE,
+        pathParams = [OpenApiParam("meal-id", Int::class, "The meal ID")],
+        responses  = [OpenApiResponse("200")]
+    )
+    fun deleteMealByMealId(ctx: Context){
+        if (mealDAO.deleteByMealId(ctx.pathParam("meal-id").toInt()) != 0)
+            ctx.status(204)
+        else
+            ctx.status(404)
+    }
+
+    @OpenApi(
+        summary = "Update meal by ID",
+        operationId = "updateMealId",
+        tags = ["Meal"],
+        path = "/api/meals/{meal-id}",
+        method = HttpMethod.PATCH,
+        pathParams = [OpenApiParam("meal-id", Int::class, "The meal ID")],
+        responses  = [OpenApiResponse("200")]
+    )
+    fun updateMeal(ctx: Context){
+        val meal : Meal = jsonToObject(ctx.body())
+        if (mealDAO.updateByMealId(
+                mealId = ctx.pathParam("meal-id").toInt(),
+                mealToUpdate = meal) != 0)
             ctx.status(204)
         else
             ctx.status(404)
